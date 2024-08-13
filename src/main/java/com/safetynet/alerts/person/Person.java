@@ -1,5 +1,6 @@
 package com.safetynet.alerts.person;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 @Data
@@ -13,4 +14,13 @@ public class Person {
 	private String phone;
 	private String email;
 
+	@JsonIgnore
+	public String getId() {
+		return firstName + lastName;
+	}
+
+	@JsonIgnore
+	public String getFullName() {
+		return firstName + " " + lastName;
+	}
 }
