@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +24,6 @@ public class JsonUtils {
 
 	private final ObjectNode root;
 
-	@Autowired
 	public JsonUtils(@Value("${data.path}") String path, ObjectMapper objectMapper) {
 		this.dataPath = Paths.get(path);
 		this.objectMapper = objectMapper;
@@ -37,15 +35,16 @@ public class JsonUtils {
 	}
 
 	public <T> List<T> get(String name, Class<T> valueType) {
-		List<T> list = null;
+		var toListGeneric = TypeFactory.defaultInstance().constructCollectionType(List.class, valueType);
+
 		try {
-			var arrayNode = root.get(name);
-			var toListGeneric = TypeFactory.defaultInstance().constructCollectionType(List.class, valueType);
-			list = objectMapper.treeToValue(arrayNode, toListGeneric);
+			List<T> list = objectMapper.treeToValue(root.get(name), toListGeneric);
+			log.info("\"{}\" accessed", name);
+			return list;
 		} catch (JsonProcessingException e) {
-			log.warn("Cannot process JSON in {}", e.getMessage());
+			log.error("Cannot process JSON: {}", e.getMessage());
+			throw new RuntimeException("Cannot process JSON: " + e.getMessage());
 		}
-		return list;
 	}
 
 	public void update(String name, List<?> newList) {
@@ -53,8 +52,10 @@ public class JsonUtils {
 
 		try (var outputStream = Files.newOutputStream(dataPath)) {
 			objectMapper.writeValue(outputStream, root);
+			log.info("\"{}\" updated", name);
 		} catch (IOException e) {
-			log.warn("Cannot write JSON file {}", e.getMessage());
+			log.error("Cannot write JSON file: {}", e.getMessage());
+			throw new RuntimeException("Cannot write JSON file: " + e.getMessage());
 		}
 	}
 
