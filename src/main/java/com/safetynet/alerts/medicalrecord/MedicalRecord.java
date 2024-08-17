@@ -3,6 +3,7 @@ package com.safetynet.alerts.medicalrecord;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.Set;
@@ -16,7 +17,8 @@ public class MedicalRecord {
 	@NotBlank
 	private String lastName;
 
-	@NotBlank @JsonFormat(pattern = "MM/dd/yyyy")
+	@NotNull
+	@JsonFormat(pattern = "MM/dd/yyyy")
 	private LocalDate birthdate;
 
 	private Set<String> medications;

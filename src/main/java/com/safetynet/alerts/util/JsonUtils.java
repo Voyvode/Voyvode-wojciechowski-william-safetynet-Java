@@ -34,7 +34,8 @@ public class JsonUtils {
 		}
 	}
 
-	public <T> List<T> get(String name, Class<T> valueType) {
+	public <T> List<T> get(Class<T> valueType) {
+		var name = valueType.getSimpleName().toLowerCase() + "s";
 		var toListGeneric = TypeFactory.defaultInstance().constructCollectionType(List.class, valueType);
 
 		try {
@@ -47,7 +48,7 @@ public class JsonUtils {
 		}
 	}
 
-	public void update(String name, List<?> newList) {
+	public <T> void update(String name, List<T> newList) {
 		root.replace(name, objectMapper.valueToTree(newList));
 
 		try (var outputStream = Files.newOutputStream(dataPath)) {

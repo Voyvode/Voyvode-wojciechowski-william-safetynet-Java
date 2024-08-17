@@ -1,70 +1,40 @@
 package com.safetynet.alerts.person;
 
 import com.safetynet.alerts.util.JsonUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import static java.util.stream.Collectors.toMap;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
 
+@RequiredArgsConstructor
 @Slf4j
 @RestController
+@Validated
 public class PersonResource {
 
 	private final JsonUtils jsonUtils;
-
-	@Autowired
-	public PersonResource(JsonUtils jsonUtils) {
-		this.jsonUtils = jsonUtils;
-	}
 
 	/**
 	 * Ajoute une nouvelle personne.
 	 */
 	@PostMapping("/person")
-	public void create(@RequestBody Person newPerson) {
-		var personList = jsonUtils.get("persons", Person.class);
+	public ResponseEntity<Void> create(@RequestBody Person newPerson) {
+		var personList = jsonUtils.get(Person.class);
 
-		if (personList.stream().anyMatch(person -> person.getId().equals(newPerson.getId()))) {
-			log.error("{} already exists", newPerson.getFullName());
-		} else {
+		if (personList.stream().noneMatch(person -> person.getId().equals(newPerson.getId()))) {
 			personList.add(newPerson);
 			jsonUtils.update("persons", personList);
 			log.info("{} added", newPerson.getFullName());
-		}
-	}
-
-	/**
-	 * Liste l’ensemble des personnes couvertes par les casernes.
-	 *
-	 * @return
-	 */
-	@GetMapping("/person")
-	public List<Person> read() {
-		log.info("All person data accessed");
-		return jsonUtils.get("persons", Person.class);
-	}
-
-	/**
-	 * Renvoie une personne.
-	 *
-	 * @param id
-	 * @return
-	 */
-	@GetMapping("/person/{id}")
-	public Person readOne(@PathVariable String id) {
-		var personMap = jsonUtils.get("persons", Person.class).stream()
-				.collect(toMap(Person::getId, x -> x));
-
-		if (!personMap.containsKey(id)) {
-			log.error("ID {} does not exist", id);
-			return null;
+			log.warn("Please create a medical record for {} to fill in birthdate.", newPerson.getFullName());
+			return ResponseEntity.status(CREATED).build();
 		} else {
-			var person = personMap.get(id);
-			log.info("{} data accessed", person.getFullName());
-			return person;
+			log.error("{} already exists", newPerson.getFullName());
+			return ResponseEntity.status(CONFLICT).build();
 		}
 	}
 
@@ -74,16 +44,18 @@ public class PersonResource {
 	 * @param id
 	 */
 	@PutMapping("/person/{id}")
-	public void update(@PathVariable String id, @RequestBody Person updatedPerson) {
-		var personMap = jsonUtils.get("persons", Person.class).stream()
+	public ResponseEntity<Void> update(@PathVariable String id, @RequestBody Person updatedPerson) {
+		var personMap = jsonUtils.get(Person.class).stream()
 				.collect(toMap(Person::getId, x -> x));
 
-		if (!personMap.containsKey(id)) {
-			log.error("ID {} does not exist, nothing to update", id);
-		} else {
+		if (personMap.containsKey(id)) {
 			personMap.replace(id, updatedPerson);
 			jsonUtils.update("persons", personMap.values().stream().toList());
 			log.info("{} updated", updatedPerson.getFullName());
+			return ResponseEntity.ok().build();
+		} else {
+			log.error("ID {} does not exist, nothing to update", id);
+			return ResponseEntity.notFound().build();
 		}
 	}
 
@@ -93,16 +65,18 @@ public class PersonResource {
 	 * @param id L’identificateur unique PrénomNom de la personne
 	 */
 	@DeleteMapping("/person/{id}")
-	public void delete(@PathVariable("id") String id) {
-		var personMap = jsonUtils.get("persons", Person.class).stream()
+	public ResponseEntity<Void> delete(@PathVariable("id") String id) {
+		var personMap = jsonUtils.get(Person.class).stream()
 				.collect(toMap(Person::getId, x -> x));
 
-		if (!personMap.containsKey(id)) {
-			log.error("ID {} does not exist, nothing to delete", id);
-		} else {
+		if (personMap.containsKey(id)) {
 			var deletedPerson = personMap.remove(id);
 			jsonUtils.update("persons", personMap.values().stream().toList());
 			log.info("{} deleted", deletedPerson.getFullName());
+			return ResponseEntity.noContent().build();
+		} else {
+			log.error("ID {} does not exist, nothing to delete", id);
+			return ResponseEntity.notFound().build();
 		}
 	}
 
