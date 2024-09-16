@@ -14,6 +14,8 @@ public class JsonConfig {
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule()); // JSR-310
 		objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		objectMapper.setDefaultPrettyPrinter(new CustomPrettyPrinter());
+
 		return objectMapper;
 	}
 
