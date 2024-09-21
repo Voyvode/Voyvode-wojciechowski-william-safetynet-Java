@@ -6,9 +6,17 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for JSON serialization.
+ */
 @Configuration
 public class JsonConfig {
 
+	/**
+	 * Creates and configures an ObjectMapper bean.
+	 *
+	 * @return a configured ObjectMapper instance
+	 */
 	@Bean
 	public ObjectMapper objectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();

@@ -10,6 +10,9 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Set;
 
+/**
+ * Models a person's medical record, with birthdate, medication and known allergies.
+ */
 @Data
 public class MedicalRecord {
 

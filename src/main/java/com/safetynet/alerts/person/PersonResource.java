@@ -11,6 +11,9 @@ import static java.util.stream.Collectors.toMap;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 
+/**
+ * REST controller for managing person information.
+ */
 @RequiredArgsConstructor
 @Slf4j
 @RestController
@@ -20,7 +23,11 @@ public class PersonResource {
 	private final JsonUtils jsonUtils;
 
 	/**
-	 * Ajoute une nouvelle personne.
+	 * Adds a new person to the system.
+	 *
+	 * @param newPerson the new person
+	 * @return ResponseEntity with status CREATED if successful, or CONFLICT if the person
+	 *         already exists in the system
 	 */
 	@PostMapping("/person")
 	public ResponseEntity<Void> create(@RequestBody Person newPerson) {
@@ -39,9 +46,12 @@ public class PersonResource {
 	}
 
 	/**
-	 * Met à jour une personne existante (la combinaison prénom-nom est réputée unique et immuable).
+	 * Updates person's information.
 	 *
-	 * @param id
+	 * @param id the unique identifier of the person (FirstnameLastname format)
+	 * @param updatedPerson the updated person information
+	 * @return ResponseEntity with status OK if successful, or NOT_FOUND if the person
+	 *         does not exist in the system
 	 */
 	@PutMapping("/person/{id}")
 	public ResponseEntity<Void> update(@PathVariable String id, @RequestBody Person updatedPerson) {
@@ -60,9 +70,11 @@ public class PersonResource {
 	}
 
 	/**
-	 * Supprime une personne.
+	 * Deletes a person from the system.
 	 *
-	 * @param id L’identificateur unique PrénomNom de la personne
+	 * @param id the unique identifier of the person to delete (FirstnameLastname format)
+	 * @return ResponseEntity with status NO_CONTENT if successful, or NOT_FOUND if the
+	 *         person does not exist in the system
 	 */
 	@DeleteMapping("/person/{id}")
 	public ResponseEntity<Void> delete(@PathVariable("id") String id) {

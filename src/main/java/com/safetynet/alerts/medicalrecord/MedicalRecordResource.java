@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.http.HttpStatus.*;
 
+/**
+ * REST controller for managing medical records.
+ */
 @RequiredArgsConstructor
 @Slf4j
 @RestController
@@ -21,7 +24,12 @@ public class MedicalRecordResource {
 	private final JsonUtils jsonUtils;
 
 	/**
-	 * Ajoute un nouveau dossier médical.
+	 * Adds a new medical record to the system. A medical record can only be created for an
+	 * existing person in the system.
+	 *
+	 * @param newRecord the new medical record
+	 * @return ResponseEntity with status CREATED if successful, CONFLICT if the record
+	 *         already exists, or I_AM_A_TEAPOT if the associated person does not exist
 	 */
 	@PostMapping("/medicalRecord")
 	public ResponseEntity<Void> create(@RequestBody @Valid MedicalRecord newRecord) {
@@ -47,9 +55,12 @@ public class MedicalRecordResource {
 	}
 
 	/**
-	 * Met à jour un dossier médical (la combinaison prénom-nom est réputée unique et immuable).
+	 * Updates a medical record.
 	 *
-	 * @param id
+	 * @param id the unique identifier of the medical record (FirstnameLastname format)
+	 * @param updateRecord the updated medical record
+	 * @return ResponseEntity with status OK if successful, or NOT_FOUND if the medical
+	 *         record does not exist
 	 */
 	@PutMapping("/medicalRecord/{id}")
 	public ResponseEntity<Void> update(@PathVariable String id, @RequestBody @Valid MedicalRecord updateRecord) {
@@ -68,9 +79,12 @@ public class MedicalRecordResource {
 	}
 
 	/**
-	 * Supprime un dossier médical.
+	 * Deletes a medical record.
 	 *
-	 * @param id L’identificateur unique PrénomNom de la personne associée au dossier médical
+	 * @param id the unique identifier of the medical record to delete
+	 *           (FirstnameLastname format)
+	 * @return ResponseEntity with status NO_CONTENT if successful, or NOT_FOUND if the
+	 *         medical record does not exist
 	 */
 	@DeleteMapping("/medicalRecord/{id}")
 	public ResponseEntity<Void> delete(@PathVariable("id") String id) {

@@ -5,7 +5,7 @@ import java.time.Period;
 import java.util.Set;
 
 /**
- * TODO JAVADOC: Convenience class Person + MedicalRecord
+ * Convenience class aggregating Person and MedicalRecord data.
  */
 public record PersonData(
 	// Person

@@ -5,6 +5,10 @@ import com.fasterxml.jackson.core.PrettyPrinter;
 
 import java.io.IOException;
 
+/**
+ * A custom pretty printer keeping current data.json formatting. Its semi-compact layout makes it
+ * easier to manually check the actual stored data.
+ */
 public class CustomPrettyPrinter implements PrettyPrinter {
 
 	private int indentationLevel = 0;

@@ -14,6 +14,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+/**
+ * A utility class for JSON data access.
+ *
+ * <p>data.json is split in array nodes, each one containing a certain type a data. Given the
+ * appropriate data class, JsonUtils deserialize the required JSON array into a list of objects
+ * usable inside SafetyNet Alerts.
+ *
+ * <p>In case of modifying CRUD operations, JsonUtils can also serialize these changes by updating
+ * data.json.
+ */
 @Component
 @Slf4j
 public class JsonUtils {
@@ -24,6 +34,12 @@ public class JsonUtils {
 
 	private final ObjectNode root;
 
+	/**
+	 * Constructor initializing JSON mapping.
+	 *
+	 * @param path JSON file path
+	 * @param objectMapper Jackson ObjectMapper
+	 */
 	public JsonUtils(@Value("${data.path}") String path, ObjectMapper objectMapper) {
 		this.dataPath = Paths.get(path);
 		this.objectMapper = objectMapper;
@@ -34,6 +50,12 @@ public class JsonUtils {
 		}
 	}
 
+	/**
+	 * Deserializes a node array into a list of objects of given type.
+	 *
+	 * @param valueType Given type
+	 * @return List of objects
+	 */
 	public <T> List<T> get(Class<T> valueType) {
 		var name = valueType.getSimpleName().toLowerCase() + "s";
 		var toListGeneric = TypeFactory.defaultInstance().constructCollectionType(List.class, valueType);
@@ -48,6 +70,12 @@ public class JsonUtils {
 		}
 	}
 
+	/**
+	 * Serializes a list of objects into a node array of given name.
+	 *
+	 * @param name Name of node array to update
+	 * @param newList Updated list of objects
+	 */
 	public <T> void update(String name, List<T> newList) {
 		root.replace(name, objectMapper.valueToTree(newList));
 

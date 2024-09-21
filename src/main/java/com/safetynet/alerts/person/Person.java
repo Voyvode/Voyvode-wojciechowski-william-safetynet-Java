@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
+/**
+ * Models a person, including name, address and contact details.
+ */
 @Data
 public class Person {
 

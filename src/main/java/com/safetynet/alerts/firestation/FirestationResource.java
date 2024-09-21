@@ -13,6 +13,9 @@ import static java.util.stream.Collectors.toMap;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 
+/**
+ * REST controller for managing address/firestation assignments.
+ */
 @RequiredArgsConstructor
 @Slf4j
 @RestController
@@ -22,7 +25,10 @@ public class FirestationResource {
 	private final JsonUtils jsonUtils;
 
 	/**
-	 * Ajoute une nouvelle affectation adresse/caserne.
+	 * Adds a new assignment.
+	 *
+	 * @param newFirestation the new address/firestation assignment to be added
+	 * @return ResponseEntity with status CREATED if successful, or CONFLICT if the address is already assigned
 	 */
 	@PostMapping(value = "/firestation", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> create(@RequestBody @Valid Firestation newFirestation) {
@@ -40,9 +46,11 @@ public class FirestationResource {
 	}
 
 	/**
-	 * Met à jour une affectation.
+	 * Updates an assignment.
 	 *
-	 * @param address
+	 * @param address the assigned address to update
+	 * @param updatedFirestation the new firestation assigned
+	 * @return ResponseEntity with status OK if successful, or NOT_FOUND if the address is not assigned
 	 */
 	@PutMapping("/firestation/{address}")
 	public ResponseEntity<Void> update(@PathVariable String address, @RequestBody @Valid Firestation updatedFirestation) {
@@ -61,9 +69,10 @@ public class FirestationResource {
 	}
 
 	/**
-	 * Supprime une affectation.
+	 * Deletes an assignment.
 	 *
-	 * @param address
+	 * @param address the assigned address to delete
+	 * @return ResponseEntity with status NO_CONTENT if successful, or NOT_FOUND if the address is not assigned
 	 */
 	@DeleteMapping("/firestation/{address}")
 	public ResponseEntity<Void> delete(@PathVariable("address") String address) {
