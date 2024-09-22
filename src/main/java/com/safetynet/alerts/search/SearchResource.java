@@ -237,7 +237,7 @@ public class SearchResource {
 		var coveredPeople = getPersonDataStream()
 				.filter(person -> coveredAddresses.contains(person.address())).toList();
 
-		return ResponseEntity.ok(new FloodStationsReponse(coveredAddresses, coveredPeople));
+		return ResponseEntity.ok(new FloodStationsReponse(coveredAddresses, coveredPeople)); // TODO
 	}
 
 	/**
@@ -251,19 +251,21 @@ public class SearchResource {
 	 * <li>or 404 Not Found if no persons with the specified last name are found.
 	 * </ul>
 	 */
-	@GetMapping("/personInfoLastName")
-	public ResponseEntity<Set<PersonInfoLastNameResponse>> getPersonInfoLastName(@RequestParam("lastName") String lastName) {
-		var records = jsonUtils.get(MedicalRecord.class).stream()
-				.collect(toMap(MedicalRecord::getFullName, x -> x));
+	@GetMapping("/personInfo")
+	public ResponseEntity<PersonInfoResponse> getPersonInfo(@RequestParam("lastName") String lastName) {
+		log.info("Searching people with last name {}", lastName);
 
-		var peopleFound = jsonUtils.get(Person.class).stream()
-				.filter(person -> person.getLastName().equals(lastName))
-				.map(person -> new PersonInfoLastNameResponse(person, records.get(person.getFullName())))
-				.collect(toUnmodifiableSet());
+		var matchingLastName = getPersonDataStream()
+				.filter(personData -> personData.lastName().equals(lastName)).toList();
+		log.debug("Matching last names: {}", matchingLastName);
 
-		if (!peopleFound.isEmpty()) {
-			return ResponseEntity.ok(peopleFound);
+		if (!matchingLastName.isEmpty()) {
+			var response = new PersonInfoResponse(matchingLastName);
+			log.info("{} with last name {} found", response.getFoundPersons().size(), lastName);
+
+			return ResponseEntity.ok(response);
 		} else {
+			log.warn("No people found with last name {} found", lastName);
 			return ResponseEntity.notFound().build();
 		}
 	}

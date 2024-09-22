@@ -75,11 +75,11 @@ public class SearchTest {
     }
 
     @Test
-    public void testPersonInfoLastNameEndpoint() throws Exception {
-        mockMvc.perform(get("/personInfoLastName").param("lastName", "Boyd"))
+    public void testPersonInfoEndpoint() throws Exception {
+        mockMvc.perform(get("/personInfo").param("lastName", "Boyd"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(6)));
+                .andExpect(jsonPath("$.foundPersons", hasSize(6)));
     }
 
     @Test
