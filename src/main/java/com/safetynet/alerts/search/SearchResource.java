@@ -152,7 +152,7 @@ public class SearchResource {
 	 * @return a ResponseEntity containing:
 	 * <ul>
 	 * <li>200 OK and a Set of phone numbers,
-	 * <li>or 404 Not Found if no addresses are associated with the given fire station number.
+	 * <li>or 404 Not Found if no phone numbers are found.
 	 * </ul>
 	 */
 	@GetMapping("/phoneAlert")
@@ -206,7 +206,6 @@ public class SearchResource {
 			var response = new FireResponse(coveringStation, household);
 			log.info("{} persons covered by fire station #{} found", household.size(), coveringStation);
 			log.debug("Household: {}", household);
-
 			return ResponseEntity.ok(response);
 		} else {
 			log.warn("No people found");
@@ -215,7 +214,7 @@ public class SearchResource {
 	}
 
 	/**
-	 * Retrieves a list of all households served by the specified fire station(s).
+	 * Retrieves a list of all households covered by the specified fire station(s).
 	 *
 	 * <p>The list groups people by address and includes the name, phone number, and age of the
 	 * householders, along with their medical history (medications and allergies).
@@ -230,14 +229,25 @@ public class SearchResource {
 	 */
 	@GetMapping("/flood/stations")
 	public ResponseEntity<FloodStationsReponse> getStations(@RequestParam("stations") Set<Integer> stationNumbers) {
+		log.info("Searching all households covered by fire station(s) {}", stationNumbers);
+
 		var coveredAddresses = jsonUtils.get(Firestation.class).stream()
 				.filter(firestation -> stationNumbers.contains(firestation.getStation()))
 				.map(Firestation::getAddress).sorted().toList();
+		log.debug("Covered addresses: {}", coveredAddresses);
 
 		var coveredPeople = getPersonDataStream()
 				.filter(person -> coveredAddresses.contains(person.address())).toList();
+		log.debug("Covered people: {}", coveredPeople);
 
-		return ResponseEntity.ok(new FloodStationsReponse(coveredAddresses, coveredPeople)); // TODO
+		if (!coveredAddresses.isEmpty()) {
+			var response = new FloodStationsReponse(coveredAddresses, coveredPeople);
+			log.info("{} persons in {} households found", coveredPeople.size(), coveredAddresses.size());
+			return ResponseEntity.ok(response);
+		} else {
+			log.warn("There is(are) no fire station(s) {}", stationNumbers);
+			return ResponseEntity.notFound().build();
+		}
 	}
 
 	/**
@@ -262,7 +272,6 @@ public class SearchResource {
 		if (!matchingLastName.isEmpty()) {
 			var response = new PersonInfoResponse(matchingLastName);
 			log.info("{} with last name {} found", response.getFoundPersons().size(), lastName);
-
 			return ResponseEntity.ok(response);
 		} else {
 			log.warn("No people found with last name {} found", lastName);
@@ -282,14 +291,19 @@ public class SearchResource {
 	 */
 	@GetMapping("/communityEmail")
 	public ResponseEntity<Set<String>> getCommunityEmail(@RequestParam("city") String city) {
+		log.info("Searching all email addresses in {}", city);
+
 		var communityEmail = jsonUtils.get(Person.class).stream()
 				.filter(person -> person.getCity().equals(city))
 				.map(Person::getEmail)
 				.collect(toUnmodifiableSet());
+		log.debug("Email addresses found: {}", communityEmail);
 
 		if (!communityEmail.isEmpty()) {
+			log.info("{} email addresses found", communityEmail.size());
 			return ResponseEntity.ok(communityEmail);
 		} else {
+			log.warn("{} is not a known city", city);
 			return ResponseEntity.notFound().build();
 		}
 	}
