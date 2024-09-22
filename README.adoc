@@ -1,0 +1,31 @@
+image::https://user.oc-static.com/upload/2024/05/17/17159021463335_P5-01_SafetyNet.png[SafetyNet]
+
+SafetyNet Alerts provides information to emergency services systems.
+
+This backend provides a REST API allowing rapid access to information about the population covered by fire stations, helping the
+rescue services to adapt effectively to the emergency situation.
+
+image:https://img.shields.io/badge/unit-pass-brightgreen[unit = pass]
+image:https://img.shields.io/badge/coverage-93%25-brightgreen[coverage = 93%]
+
+== Data
+
+|===
+| firestation   | Address/fire station assignements
+| person        | Known person by the system, with address and contacts
+| medicalRecord | Medical record with birthdate, medications and known allergies
+|===
+
+These data can be modified via corresponding POST, PUT and DELETE methods.
+
+== Search API
+
+|===
+| `/*firestation*?stationNumber=_<station>_`      | People covered by a fire station and count of children.
+| `/*childAlert*?address=_<address>_`             | Indication of presence and information about children.
+| `/*phoneAlert*?firestation=_<stationNumber>_`   | Phone directories of persons covered by a fire station.
+| `/*fire*?address=_<address>_`                   | Detailed information about a household.
+| `/*flood/stations*?stations=_<stationNumbers>_` | Households and householders covered by fire station(s).
+| `/*personInfo*?lastName=_<lastName>_`           | Detailed information found by last name.
+| `/*communityEmail*?city=_<city>_`               | Mailing list of all known city residents.
+|===
