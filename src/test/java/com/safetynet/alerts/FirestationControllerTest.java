@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(OrderAnnotation.class)
-public class PersonResourceTest {
+public class FirestationControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,67 +36,59 @@ public class PersonResourceTest {
 
     @Test
     @Order(1)
-    public void testCreatePerson() throws Exception {
-        mockMvc.perform(post("/person")
+    public void testCreateFirestation() throws Exception {
+        mockMvc.perform(post("/firestation")
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                { "firstName":"Jane", "lastName":"Doe",
-                                "address":"123 Test St", "city":"Nowhere", "zip":"12345",
-                                "phone":"123-456-7890", "email":"jdoe@mail.com" }
+                                { "address":"123 Test St", "station":"5" }
                                 """))
                 .andExpect(status().isCreated());
     }
 
     @Test
     @Order(2)
-    public void testCreatePersonConflict() throws Exception {
-        mockMvc.perform(post("/person")
+    public void testCreateFirestationConflict() throws Exception {
+        mockMvc.perform(post("/firestation")
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                { "firstName":"Jane", "lastName":"Doe",
-                                "address":"456 Anyway Rd", "city":"Anywhere",
-                                "zip":"98765", "phone":"987-654-3210", "email":"jpeter@impostor.com" }
+                                { "address":"123 Test St", "station":"3" }
                                 """))
                 .andExpect(status().isConflict());
     }
 
     @Test
     @Order(3)
-    public void testUpdatePerson() throws Exception {
-        mockMvc.perform(put("/person/JaneDoe")
+    public void testUpdateFirestation() throws Exception {
+        mockMvc.perform(put("/firestation/123 Test St")
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                { "firstName":"Jane", "lastName":"Smith",
-                                "address":"1600 Pennsylvania Av", "city":"Washington DC",
-                                "zip":"20500", "phone":"999-999-9999", "email":"jdoe@whitehouse.com" }
+                                { "address":"123 Test St", "station":"1" }
                                 """))
                 .andExpect(status().isOk());
     }
 
     @Test
     @Order(4)
-    public void testUpdatePersonNotFound() throws Exception {
-        mockMvc.perform(put("/person/MeNoexist")
+    public void testUpdateFirestationNotFound() throws Exception {
+        mockMvc.perform(put("/firestation/0000 Untold Rd")
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                { "firstName":"Me", "lastName":"Noexist",
-                                "address":"000 Staya Way", "city":"Netherworld",
-                                "zip":"00000", "phone":"000-000-0000", "email":"noreply@server.nil" }
+                                { "address":"0000 Untold Rd", "station":"1" }
                                 """))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @Order(5)
-    public void testDeletePerson() throws Exception {
-        mockMvc.perform(delete("/person/JaneSmith"))
+    public void testDeleteFirestation() throws Exception {
+        mockMvc.perform(delete("/firestation/123 Test St"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     @Order(6)
-    public void testDeletePersonNotFound() throws Exception {
-        mockMvc.perform(delete("/person/MeNoexist"))
+    public void testDeleteFirestationNotFound() throws Exception {
+        mockMvc.perform(delete("/firestation/0000 Untold Rd"))
                 .andExpect(status().isNotFound());
     }
 

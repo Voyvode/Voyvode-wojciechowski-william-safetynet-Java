@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestMethodOrder(OrderAnnotation.class)
-public class MedicalRecordResourceTest {
+public class PersonControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,92 +36,67 @@ public class MedicalRecordResourceTest {
 
     @Test
     @Order(1)
-    public void testCreateMedicalRecord() throws Exception {
-        // add corresponding person required for medical record
+    public void testCreatePerson() throws Exception {
         mockMvc.perform(post("/person")
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                { "firstName":"John", "lastName":"Doe",
+                                { "firstName":"Jane", "lastName":"Doe",
                                 "address":"123 Test St", "city":"Nowhere", "zip":"12345",
                                 "phone":"123-456-7890", "email":"jdoe@mail.com" }
-                                """));
-
-        mockMvc.perform(post("/medicalRecord")
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                                { "firstName":"John", "lastName":"Doe",
-                                "birthdate":"04/01/1984",
-                                "medications":["doexetin:300mg"], "allergies":["doenuts"] }
                                 """))
                 .andExpect(status().isCreated());
     }
 
     @Test
     @Order(2)
-    public void testCreateMedicalRecordConflict() throws Exception {
-        mockMvc.perform(post("/medicalRecord")
+    public void testCreatePersonConflict() throws Exception {
+        mockMvc.perform(post("/person")
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                { "firstName":"John", "lastName":"Doe",
-                                "birthdate":"12/25/1492",
-                                "medications":[], "allergies":[] }
+                                { "firstName":"Jane", "lastName":"Doe",
+                                "address":"456 Anyway Rd", "city":"Anywhere",
+                                "zip":"98765", "phone":"987-654-3210", "email":"jpeter@impostor.com" }
                                 """))
                 .andExpect(status().isConflict());
     }
 
     @Test
     @Order(3)
-    public void testCreateMedicalWithoutPerson() throws Exception {
-        mockMvc.perform(post("/medicalRecord")
+    public void testUpdatePerson() throws Exception {
+        mockMvc.perform(put("/person/JaneDoe")
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                { "firstName":"Me", "lastName":"Noexist",
-                                "birthdate":"01/01/0001",
-                                "medications":["nilapranil:0mg"], "allergies":["being"] }
-                                """))
-                .andExpect(status().isIAmATeapot());
-    }
-
-    @Test
-    @Order(4)
-    public void testUpdateMedicalRecord() throws Exception {
-        mockMvc.perform(put("/medicalRecord/JohnDoe")
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                                { "firstName":"John", "lastName":"Doe",
-                                "birthdate":"04/01/1984",
-                                "medications":["Doeliprane:1000mg"], "allergies":["doenuts", "Knockandoe"] }
+                                { "firstName":"Jane", "lastName":"Smith",
+                                "address":"1600 Pennsylvania Av", "city":"Washington DC",
+                                "zip":"20500", "phone":"999-999-9999", "email":"jdoe@whitehouse.com" }
                                 """))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @Order(5)
-    public void testUpdateMedicalRecordNotFound() throws Exception {
-        mockMvc.perform(put("/medicalRecord/MeNoexist")
+    @Order(4)
+    public void testUpdatePersonNotFound() throws Exception {
+        mockMvc.perform(put("/person/MeNoexist")
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 { "firstName":"Me", "lastName":"Noexist",
-                                "birthdate":"01/01/0001",
-                                "medications":["nilapranil:0mg"], "allergies":["being"] }
+                                "address":"000 Staya Way", "city":"Netherworld",
+                                "zip":"00000", "phone":"000-000-0000", "email":"noreply@server.nil" }
                                 """))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @Order(6)
-    public void testDeleteMedicalRecord() throws Exception {
-        mockMvc.perform(delete("/medicalRecord/JohnDoe"))
+    @Order(5)
+    public void testDeletePerson() throws Exception {
+        mockMvc.perform(delete("/person/JaneSmith"))
                 .andExpect(status().isNoContent());
-
-        // remove corresponding person after medical record deletion
-        mockMvc.perform(delete("/person/JohnDoe"));
     }
 
     @Test
-    @Order(7)
-    public void testDeleteMedicalRecordNotFound() throws Exception {
-        mockMvc.perform(delete("/medicalRecord/MeNoexist"))
+    @Order(6)
+    public void testDeletePersonNotFound() throws Exception {
+        mockMvc.perform(delete("/person/MeNoexist"))
                 .andExpect(status().isNotFound());
     }
 

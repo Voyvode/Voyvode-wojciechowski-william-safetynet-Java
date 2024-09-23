@@ -14,7 +14,7 @@ import java.util.Set;
  * Models a person's medical record, with birthdate, medication and known allergies.
  */
 @Data
-public class MedicalRecord {
+public class MedicalRecordDTO {
 
 	@NotBlank
 	private String firstName;

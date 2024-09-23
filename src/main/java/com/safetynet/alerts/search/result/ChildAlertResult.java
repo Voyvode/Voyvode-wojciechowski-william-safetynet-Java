@@ -1,5 +1,6 @@
-package com.safetynet.alerts.search.response;
+package com.safetynet.alerts.search.result;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.safetynet.alerts.search.PersonData;
 import lombok.Data;
 
@@ -8,12 +9,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
-public class ChildAlertResponse {
+public class ChildAlertResult {
 
-	private Set<ChildDataExtract> children;
-	private Set<OtherDataExtract> otherHouseholders;
+	private final Set<ChildDataExtract> children;
+	private final Set<OtherDataExtract> otherHouseholders;
 
-	public ChildAlertResponse(List<PersonData> household) {
+	public ChildAlertResult(List<PersonData> household) {
 		children = household.stream()
 				.filter(PersonData::isMinor)
 				.map(child -> new ChildDataExtract(child.firstName(), child.lastName(), child.getAge()))
@@ -23,6 +24,21 @@ public class ChildAlertResponse {
 				.filter(PersonData::isMajor)
 				.map(other -> new OtherDataExtract(other.firstName(), other.lastName()))
 				.collect(Collectors.toUnmodifiableSet());
+	}
+
+	@JsonIgnore
+	public boolean hasChildren() {
+		return !children.isEmpty();
+	}
+
+	@JsonIgnore
+	public boolean hasAdultsOnly() {
+		return children.isEmpty() && otherHouseholders.isEmpty();
+	}
+
+	@JsonIgnore
+	public int size() {
+		return children.size();
 	}
 
 	record ChildDataExtract(String firstName, String lastName, int age) { }

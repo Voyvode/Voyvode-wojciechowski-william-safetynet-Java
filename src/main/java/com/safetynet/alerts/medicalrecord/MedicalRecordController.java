@@ -1,7 +1,5 @@
 package com.safetynet.alerts.medicalrecord;
 
-import com.safetynet.alerts.person.Person;
-import com.safetynet.alerts.util.JsonUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,19 +7,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import static java.util.stream.Collectors.toMap;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.PRECONDITION_REQUIRED;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 /**
  * REST controller for managing medical records.
  */
-@RequiredArgsConstructor
-@Slf4j
 @RestController
+@RequiredArgsConstructor
 @Validated
-public class MedicalRecordResource {
+@Slf4j
+@RequestMapping(value = "/medicalRecord")
+public class MedicalRecordController {
 
-	private final JsonUtils jsonUtils;
+	private final MedicalRecordService service;
 
 	/**
 	 * Adds a new medical record to the system. A medical record can only be created for an
@@ -31,27 +32,23 @@ public class MedicalRecordResource {
 	 * @return ResponseEntity with status CREATED if successful, CONFLICT if the record
 	 *         already exists, or I_AM_A_TEAPOT if the associated person does not exist
 	 */
-	@PostMapping("/medicalRecord")
-	public ResponseEntity<Void> create(@RequestBody @Valid MedicalRecord newRecord) {
-		var recordList = jsonUtils.get(MedicalRecord.class);
-		var personList = jsonUtils.get(Person.class);
-
-		// Create a medical record only for an existing person
-		if (personList.stream().anyMatch(person -> person.getId().equals(newRecord.getId()))) {
-			if (recordList.stream().noneMatch(record -> record.getId().equals(newRecord.getId()))) {
-				recordList.add(newRecord);
-				jsonUtils.update("medicalrecords", recordList);
+	@PostMapping
+	public ResponseEntity<Void> create(@RequestBody @Valid MedicalRecordDTO newRecord) {
+		switch (service.createMedicalRecord(newRecord)) {
+			case RECORD_CREATED -> {
 				log.info("{} added", newRecord.getFullName());
 				return ResponseEntity.status(CREATED).build();
-			} else {
-				log.error("{} already exists", newRecord.getFullName());
+			}
+			case PERSON_NOT_FOUND -> {
+				log.error("{} does not exist in the system. Cannot create a medical record", newRecord.getFullName());
+				return ResponseEntity.status(UNPROCESSABLE_ENTITY).build();
+			}
+			default -> {
+				log.error("{} already has a medical record", newRecord.getFullName());
+				ResponseEntity.status(PRECONDITION_REQUIRED);
 				return ResponseEntity.status(CONFLICT).build();
 			}
-		} else {
-			log.error("{} does not exist. Cannot create a medical record.", newRecord.getFullName());
-			return ResponseEntity.status(I_AM_A_TEAPOT).build();
 		}
-
 	}
 
 	/**
@@ -62,14 +59,9 @@ public class MedicalRecordResource {
 	 * @return ResponseEntity with status OK if successful, or NOT_FOUND if the medical
 	 *         record does not exist
 	 */
-	@PutMapping("/medicalRecord/{id}")
-	public ResponseEntity<Void> update(@PathVariable String id, @RequestBody @Valid MedicalRecord updateRecord) {
-		var recordMap = jsonUtils.get(MedicalRecord.class).stream()
-				.collect(toMap(MedicalRecord::getId, x -> x));
-
-		if (recordMap.containsKey(id)) {
-			recordMap.replace(id, updateRecord);
-			jsonUtils.update("medicalrecords", recordMap.values().stream().toList());
+	@PutMapping("/{id}")
+	public ResponseEntity<Void> update(@PathVariable String id, @RequestBody @Valid MedicalRecordDTO updateRecord) {
+		if (service.updateMedicalRecord(id, updateRecord)) {
 			log.info("{} updated", updateRecord.getFullName());
 			return ResponseEntity.ok().build();
 		} else {
@@ -86,14 +78,10 @@ public class MedicalRecordResource {
 	 * @return ResponseEntity with status NO_CONTENT if successful, or NOT_FOUND if the
 	 *         medical record does not exist
 	 */
-	@DeleteMapping("/medicalRecord/{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable("id") String id) {
-		var recordMap = jsonUtils.get(MedicalRecord.class).stream()
-				.collect(toMap(MedicalRecord::getId, x -> x));
-
-		if (recordMap.containsKey(id)) {
-			var deletedRecord = recordMap.remove(id);
-			jsonUtils.update("medicalrecords", recordMap.values().stream().toList());
+		var deletedRecord = service.deleteMedicalRecord(id);
+		if (deletedRecord != null) {
 			log.info("{} deleted", deletedRecord.getFullName());
 			return ResponseEntity.noContent().build();
 		} else {

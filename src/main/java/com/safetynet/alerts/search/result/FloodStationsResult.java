@@ -1,5 +1,6 @@
-package com.safetynet.alerts.search.response;
+package com.safetynet.alerts.search.result;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.safetynet.alerts.search.PersonData;
 import lombok.Data;
 
@@ -16,11 +17,11 @@ import java.util.stream.Collectors;
  * médicaux (médicaments, posologie et allergies) à côté de chaque nom.
  */
 @Data
-public class FloodStationsReponse {
+public class FloodStationsResult {
 
-	private Map<String, List<DataExtract>> households;
+	private final Map<String, List<DataExtract>> households;
 
-	public FloodStationsReponse(List<String> coveredAddresses, List<PersonData> coveredPersonData) {
+	public FloodStationsResult(List<String> coveredAddresses, List<PersonData> coveredPersonData) {
 		households = coveredPersonData.stream()
 				.filter(person -> coveredAddresses.contains(person.address()))
 				.collect(Collectors.groupingBy(
@@ -38,6 +39,23 @@ public class FloodStationsReponse {
 								Collectors.toList()
 						)
 				));
+	}
+
+	@JsonIgnore
+	public boolean isNotEmpty() {
+		return !households.isEmpty();
+	}
+
+	@JsonIgnore
+	public int getNumberOfCoveredPersons() {
+		return households.values().stream()
+				.mapToInt(List::size)
+				.sum();
+	}
+
+	@JsonIgnore
+	public int getNumberOfCoveredHouseholds() {
+		return households.size();
 	}
 
 	record DataExtract(String firstName, String lastName, String phoneNumber, int age, Set<String> medications, Set<String> allergies) { }

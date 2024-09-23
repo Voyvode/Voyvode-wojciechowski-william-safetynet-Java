@@ -13,7 +13,7 @@ public record PersonData(
 	String lastName,
 	String address,
 	String city,
-	int zip,
+	String zip,
 	String phone,
 	String email,
 	// MedicalRecord

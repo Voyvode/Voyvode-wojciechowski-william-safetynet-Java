@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.safetynet.alerts.firestation.FirestationDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A utility class for JSON data access.
@@ -57,7 +59,7 @@ public class JsonUtils {
 	 * @return List of objects
 	 */
 	public <T> List<T> get(Class<T> valueType) {
-		var name = valueType.getSimpleName().toLowerCase() + "s";
+		var name = valueType.getSimpleName().replace("DTO", "s").toLowerCase();
 		var toListGeneric = TypeFactory.defaultInstance().constructCollectionType(List.class, valueType);
 
 		try {
@@ -74,10 +76,10 @@ public class JsonUtils {
 	 * Serializes a list of objects into a node array of given name.
 	 *
 	 * @param name Name of node array to update
-	 * @param newList Updated list of objects
+	 * @param updatedList Updated list of objects
 	 */
-	public <T> void update(String name, List<T> newList) {
-		root.replace(name, objectMapper.valueToTree(newList));
+	public <T> void update(String name, List<T> updatedList) {
+		root.replace(name, objectMapper.valueToTree(updatedList));
 
 		try (var outputStream = Files.newOutputStream(dataPath)) {
 			objectMapper.writeValue(outputStream, root);
@@ -86,6 +88,16 @@ public class JsonUtils {
 			log.error("Cannot write JSON file: {}", e.getMessage());
 			throw new RuntimeException("Cannot write JSON file: " + e.getMessage());
 		}
+	}
+
+	/**
+	 * Serializes values of map into a node array of given name.
+	 *
+	 * @param name Name of node array to update
+	 * @param updatedMap Updated list of objects
+	 */
+	public <T> void update(String name, Map<String, T> updatedMap) {
+		update(name, updatedMap.values().stream().toList());
 	}
 
 }

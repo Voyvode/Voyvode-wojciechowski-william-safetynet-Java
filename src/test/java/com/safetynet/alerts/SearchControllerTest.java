@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class SearchTest {
+public class SearchControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,7 +38,7 @@ public class SearchTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.adultCount").value(5))
                 .andExpect(jsonPath("$.childCount").value(1))
-                .andExpect(jsonPath("$.coveredPeopleDataExtract", hasSize(6)));
+                .andExpect(jsonPath("$.coveredPersons", hasSize(6)));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class SearchTest {
     }
 
     @Test
-    public void testFloodStationEndpoint() throws Exception {
+    public void testFloodStationsEndpoint() throws Exception {
         mockMvc.perform(get("/flood/stations").param("stations", "1,2"))
                 .andDo(print())
                 .andExpect(status().isOk())

@@ -8,7 +8,7 @@ import lombok.Data;
  * Models the assignment of a fire station to a household address.
  */
 @Data
-public class Firestation {
+public class FirestationDTO {
 
 	@NotBlank
 	private String address;

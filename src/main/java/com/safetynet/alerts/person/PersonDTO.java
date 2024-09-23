@@ -10,7 +10,7 @@ import lombok.Data;
  * Models a person, including name, address and contact details.
  */
 @Data
-public class Person {
+public class PersonDTO {
 
 	@NotBlank
 	private String firstName;
@@ -25,7 +25,7 @@ public class Person {
 	private String city;
 
 	@NotBlank @Pattern(regexp = "\\d{5}", message = "ZIP code must be 5 digits")
-	private int zip;
+	private String zip;
 
 	@NotBlank @Pattern(regexp = "\\d{3}-\\d{3}-\\d{4}", message = "Phone number must be XXX-XXX-XXXX format")
 	private String phone;
