@@ -33,3 +33,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Custom ###
+/logs
+/data/test/sample.json
